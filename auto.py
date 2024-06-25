@@ -348,7 +348,9 @@ def allyExec(accounts, tickers):
             #except:
                 #print(ticker[0] + "not"+str(ticker[3])+ " in " + account + "in ally")
 
-def tradierExec(accounts, tickers, tradierToken):
+def tradierExec(accounts, tickers):
+    tradierToken = accounts[0]
+    accounts = accounts[1:]
     for account in accounts:
         for ticker in tickers:
             if(ticker[3]):

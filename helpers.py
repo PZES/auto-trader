@@ -1,7 +1,7 @@
 from time import sleep
 import random
 import requests
-from data import tradierToken
+from data import accounts
 
 def fastSleep():
     time = random.randint(100,150)
@@ -21,14 +21,13 @@ def getPrice(ticker):
             'symbols': '{}'.format(ticker), 
             'greeks': 'false'},
         headers={
-            'Authorization': 'Bearer {}'.format(tradierToken), 
+            'Authorization': 'Bearer {}'.format(accounts['Tradier'][0]), 
             'Accept': 'application/json'}
     )
     json_response = response.json()
     bid = float(f"{float(json_response.get('quotes').get('quote').get('bid')):.2f}")
     ask = float(f"{float(json_response.get('quotes').get('quote').get('ask')):.2f}")
 
-    print(bid/ask)
     #just checking if the bid ask is really messed up
     if(bid/ask > .90):
         #buy/sell at market price
@@ -36,24 +35,22 @@ def getPrice(ticker):
         return [ask,bid]
     else:
         return[bid,ask]
-    
 
 #changes the tickers from a user input string to a 2d array
 def setTickers(tickers):
     bs = None
     tickers = tickers.split('\n')
     for i in range(len(tickers)):
+        if tickers[i] == '':
+            continue
         #buying or selling
         if tickers[i] in ['b','s']:
             bs = (tickers[i] == 'b')
-            print("set bs")
             continue
         if bs is None:
-            print('Set Buy or Sell')
             return
         tickers[i] = tickers[i].split(",")
         #ticker or ticker,quant
-        print(bs)
         tickers[i].append(bs)
         #ticker,T/F or ticker,quant,T/F
 
@@ -61,9 +58,14 @@ def setTickers(tickers):
         if(len(tickers[i]) == 2):
             tickers[i].insert(1, 1)
         #ticker,quant,T/F
-
         price = getPrice(tickers[i][0])[0] if bs else getPrice(tickers[i][0])[1]
         tickers[i] = tickers[i][:1]+[price]+tickers[i][1:]
         #ticker,price,quant,T/F
 
     return(tickers)
+
+def errorLog():
+    with open("data.log", "a") as f:  # Open file in append mode ("a")
+        print("Executing with accounts:", accounts, file=f)
+        print("Executing with tickers:", tickers, file=f)
+        print("Execution successful", file=f)
