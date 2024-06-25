@@ -64,8 +64,9 @@ def setTickers(tickers):
 
     return(tickers)
 
-def errorLog():
+def loginLog():
     with open("data.log", "a") as f:  # Open file in append mode ("a")
-        print("Executing with accounts:", accounts, file=f)
-        print("Executing with tickers:", tickers, file=f)
-        print("Execution successful", file=f)
+        print()
+def errorLog(ticker, bs, platform):
+    with open("data.log", "a") as f:  # Open file in append mode ("a")
+        (print('unable to ','buy ' if bs else 'sell ', ticker, 'on ', platform,  file=f))
