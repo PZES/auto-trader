@@ -1,4 +1,4 @@
-tradierToken = 'qwerty'#full tradier api token
+tradierToken = 'qwqweqweerty'#full tradier api token
 numOfSchwabAccounts = ["Roth Contributory IRA","Individual","Contributory"]#full name of accounts
 RobinhoodAccounts = ["Individual investing"] #full name of accounts
 numOfSOFIAccounts = 3
