@@ -77,7 +77,10 @@ def errorLog(ticker, platform):
     with open("data.log", "a") as f:  # Open file in append mode ("a")
         print('unable to','buy' if ticker[3] else 'sell', ticker[0], 'on', platform,  file=f)
 
-def goodDB(bs, ticker, platform, price):
+def goodDB(tickerlist, platform):
+    bs = tickerlist[3]
+    price = tickerlist[1]
+    ticker = tickerlist[0]
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
     if bs:  # If 'buy'

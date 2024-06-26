@@ -76,6 +76,7 @@ def schwabExec(accounts, tickers):
                 #place another
                 slowSleep()
                 driver.find_element(By.CSS_SELECTOR, ".mcaio--mcaio-cta-buttons-anothertrade").click()
+                goodDB(ticker,account+' in Schwab')
             except:
                 errorLog(ticker,account+' in Schwab')
 
@@ -106,6 +107,7 @@ def fidelityExec(accounts, tickers):
                 slowSleep()
                 #place
                 driver.find_element(By.ID, "placeOrderBtn").click()
+                goodDB(ticker,account+' in Fidelity')
             except:
                 errorLog(ticker,account+' in Fidelity')
 
@@ -178,6 +180,7 @@ def vanguardExec(accounts, tickers):
                 #submit
                 driver.find_element(By.ID,"baseForm:submitButtonInput").click()
                 fastSleep()
+                goodDB(ticker,account+' in Vanguard')
             except:
                 errorLog(ticker,account+' in Vanguard')
 
@@ -266,6 +269,7 @@ def wellsFargoExec(accounts, tickers):
                 submit.click()
                 slowSleep()
                 driver.find_element(By.CSS_SELECTOR, ".btn-wfa-primary").click()
+                goodDB(ticker,account+' in Wells Fargo')
             except:
                 errorLog(ticker,account+' in Wells Fargo')
                 #print(ticker[0] + "not"+str(ticker[3])+ " in " + str(i) + "in wells fargo")
@@ -305,6 +309,7 @@ def firstradeExec(accounts, tickers):
                 slowSleep()
                 driver.find_element(By.CSS_SELECTOR, ".submitted_placeorder_bnt").click()
                 fastSleep()
+                goodDB(ticker,account+' in Firstrade')
             except:
                 errorLog(ticker,account+' in Firstrade')
                 #print(ticker[0] + "not"+str(ticker[3])+ " in " + account + "in firstrade")
@@ -361,6 +366,7 @@ def allyExec(accounts, tickers):
             #okay
             driver.find_element(By.XPATH, "//*[@id='trade-complete']/div[3]/ally-button/button").click()
             fastSleep()
+            goodDB(ticker,account+' in Ally')
             #except:
                 #errorLog(ticker,account+' in Ally')
                 #print(ticker[0] + "not"+str(ticker[3])+ " in " + account + "in ally")
@@ -384,6 +390,7 @@ def tradierExec(accounts, tickers):
             headers=headers
             )
             json_response = response.json()
+            goodDB(ticker,account+' in Tradier')
 
 #TODO
 def sofiLogin():
@@ -411,6 +418,7 @@ def sofiExec(accounts, tickers):
                 driver.find_element(By.CSS_SELECTOR, ".StyledActionButton-hdOdyk").click()
                 fastSleep()
                 driver.find_element(By.XPATH, "/html/body/div/div/main/div[2]/div[2]/div[3]/div/div[2]/button").click()
+                goodDB(ticker,account+' in Sofi')
             except:
                 errorLog(ticker,account+' in Sofi')
                 #print(ticker[0] + "not"+str(ticker[3])+ " in " + str(account) + "in sofi")
@@ -449,6 +457,7 @@ def robinhoodExec(accounts, tickers):
             #done
             driver.find_element(By.XPATH, "//button[contains(.,\'Done\')]").click()
             slowSleep()
+            goodDB(ticker,account+' in Robinhood')
             #except:
                 #errorLog(ticker,account+' in Robinhood')
                 #print(ticker[0] + "not"+str(ticker[3])+ " in " + str(i) + "in robinhood")
@@ -477,6 +486,7 @@ def publicExec(tickers):
             driver.find_element(By.XPATH, "/html/body/div[11]/div[3]/div/div/div/div/div[3]/button").click()
             fastSleep()
             driver.find_element(By.XPATH, "/html/body/div[11]/div[3]/div/div/div/div/div[2]/button").click()
+            goodDB(ticker,'Public')
         except:
             errorLog(ticker,'Public')
             #print(ticker[0] + "not"+str(ticker[3])+ " in public")
