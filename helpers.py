@@ -2,6 +2,7 @@ from time import sleep
 import random
 import requests
 from data import accounts
+import sqlite3
 
 def fastSleep():
     time = random.randint(100,150)
@@ -29,12 +30,14 @@ def getPrice(ticker):
     ask = float(f"{float(json_response.get('quotes').get('quote').get('ask')):.2f}")
 
     #dont buy at ask if stock price is messed up
-    if(bid/ask > .90):
+    if(bid/ask > .80):
         #buy/sell at market price
-        
         return [ask,bid]
     else:
-        return[bid,ask]
+        with open("data.log", "a") as f:  # Open file in append mode ("a")
+            print('bid ask spread >20%', ticker, file=f)
+        #TODO ask user for input
+        return
 
 #changes the tickers from a user input string to a 2d array
 def setTickers(input):
@@ -66,9 +69,53 @@ def setTickers(input):
 
     return(tickers)
 
-def loginLog():
+def loginLog(platform):
     with open("data.log", "a") as f:  # Open file in append mode ("a")
-        print()
-def errorLog(ticker, bs, platform):
+        print('unabele to login to', platform, file=f)
+
+def errorLog(ticker, platform):
     with open("data.log", "a") as f:  # Open file in append mode ("a")
-        (print('unable to','buy' if bs else 'sell', ticker, 'on', platform,  file=f))
+        print('unable to','buy' if ticker[3] else 'sell', ticker[0], 'on', platform,  file=f)
+
+def goodDB(bs, ticker, platform, price):
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
+    if bs:  # If 'buy'
+        cursor.execute('''
+        INSERT INTO log (action, ticker, platform, buy_date)
+        VALUES (?, ?, ?, ?)
+        ''', ('buy', ticker, platform, now))
+    else:  # If 'sell'
+        # Check if a previous sell operation exists for the same ticker and platform
+        cursor.execute('''
+        SELECT id FROM log
+        WHERE action = 'sell' AND ticker = ? AND platform = ?
+        ''', (ticker, platform))
+        
+        sellRecord = cursor.fetchone()
+        if sellRecord:
+            print(f"A sell operation for {ticker} on {platform} has already been performed.")
+        else:
+            # Proceed with sell operation
+            cursor.execute('''
+            SELECT id, buy_date FROM log
+            WHERE action = 'buy' AND ticker = ? AND platform = ?
+            ORDER BY id DESC
+            LIMIT 1
+            ''', (ticker, platform))
+            
+            buyRecord = cursor.fetchone()
+            if buyRecord:
+                buyId = buyRecord[0]
+                buyDate = buyRecord[1]
+                profit = price - cursor.execute('SELECT sell_price FROM log WHERE id=?', (buyId,)).fetchone()[0]
+                cursor.execute('''
+                UPDATE log
+                SET action = 'sell', sell_date = ?, sell_price = ?, profit = ?
+                WHERE id = ?
+                ''', (now, price, profit, buyId))
+            else:
+                print(f"No buy operation found for {ticker} on {platform}.")
+    
+    # Commit the changes to the database
+    conn.commit()

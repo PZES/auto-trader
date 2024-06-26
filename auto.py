@@ -25,14 +25,17 @@ driver = uc.Chrome(options=options)
 
 def schwabLogin():
     #schwab login page
-    driver.get("https://client.schwab.com/Login/SignOn/CustomerCenterLogin.aspx")
-    
-    iframe = driver.find_element(By.ID, "lmsSecondaryLogin")
-    driver.switch_to.frame(iframe)
+    try:
+        driver.get("https://client.schwab.com/Login/SignOn/CustomerCenterLogin.aspx")
+        
+        iframe = driver.find_element(By.ID, "lmsSecondaryLogin")
+        driver.switch_to.frame(iframe)
 
-    #wait for autocomplete
-    slowSleep()
-    driver.find_element(By.ID, "btnLogin").click()
+        #wait for autocomplete
+        slowSleep()
+        driver.find_element(By.ID, "btnLogin").click()
+    except:
+        loginLog('Schwab')
 
 #TODO quantity > 1
 def schwabExec(accounts, tickers):
@@ -74,10 +77,13 @@ def schwabExec(accounts, tickers):
             driver.find_element(By.CSS_SELECTOR, ".mcaio--mcaio-cta-buttons-anothertrade").click()
 
 def fidelityLogin():
-    driver.get("https://digital.fidelity.com/prgw/digital/login/full-page?AuthRedUrl=https://digital.fidelity.com/ftgw/digital/portfolio/summary")
-    slowSleep()
-    driver.find_element(By.CSS_SELECTOR, ".main-container").click()
-    driver.find_element(By.CSS_SELECTOR, ".pvd-button__contents").click()
+    try:
+        driver.get("https://digital.fidelity.com/prgw/digital/login/full-page?AuthRedUrl=https://digital.fidelity.com/ftgw/digital/portfolio/summary")
+        slowSleep()
+        driver.find_element(By.CSS_SELECTOR, ".main-container").click()
+        driver.find_element(By.CSS_SELECTOR, ".pvd-button__contents").click()
+    except:
+        loginLog('Fidelity')
 
 def fidelityExec(accounts, tickers):
     for account in accounts:
@@ -101,9 +107,12 @@ def fidelityExec(accounts, tickers):
                 print(ticker[0] + "not"+str(ticker[3])+ " in " + account + "in vanguard")
 
 def vanguardLogin():
-    driver.get("https://holdings.web.vanguard.com/")
-    slowSleep()
-    driver.find_element(By.XPATH, "//*[@id='username-password-submit-btn-1']").click()
+    try:
+        driver.get("https://holdings.web.vanguard.com/")
+        slowSleep()
+        driver.find_element(By.XPATH, "//*[@id='username-password-submit-btn-1']").click()
+    except:
+        loginLog('Vanguard')
 
 def vanguardExec(accounts, tickers):
     qqq=0
@@ -170,10 +179,13 @@ def vanguardExec(accounts, tickers):
                 print(ticker[0] + "not "+str(ticker[3])+ " in " + i + " in vanguard")
 
 def wellsFargoLogin():
-    driver.get("https://connect.secure.wellsfargo.com/auth/login/present")
-    slowSleep()
-    login = driver.find_element(By.CSS_SELECTOR, ".Button__modern___cqCp7")
-    login.click()
+    try:
+        driver.get("https://connect.secure.wellsfargo.com/auth/login/present")
+        slowSleep()
+        login = driver.find_element(By.CSS_SELECTOR, ".Button__modern___cqCp7")
+        login.click()
+    except:
+        loginLog('WellsFargo')
 
 def wellsFargoExec(accounts, tickers):
     #navigate to it cuz wellsfargo got weird links
@@ -255,9 +267,12 @@ def wellsFargoExec(accounts, tickers):
                 print(ticker[0] + "not"+str(ticker[3])+ " in " + str(i) + "in wells fargo")
 
 def firstradeLogin():
-    driver.get("https://invest.firstrade.com/cgi-bin/login")
-    slowSleep()
-    driver.find_element(By.ID, "loginButton").click()
+    try:
+        driver.get("https://invest.firstrade.com/cgi-bin/login")
+        slowSleep()
+        driver.find_element(By.ID, "loginButton").click()
+    except:
+        loginLog('Firstrade')
 
 def firstradeExec(accounts, tickers):
     driver.get("https://invest.firstrade.com/cgi-bin/main#/cgi-bin/stock_order")
@@ -290,9 +305,12 @@ def firstradeExec(accounts, tickers):
                 print(ticker[0] + "not"+str(ticker[3])+ " in " + account + "in firstrade")
 
 def allyLogin():
-    driver.get("https://secure.ally.com/")
-    slowSleep()
-    driver.find_element(By.XPATH, "//*[contains(@id,'login-button')]").click()
+    try:
+        driver.get("https://secure.ally.com/")
+        slowSleep()
+        driver.find_element(By.XPATH, "//*[contains(@id,'login-button')]").click()
+    except:
+        loginLog('Ally')
 
 def allyExec(accounts, tickers):
     #driver.get("https://live.invest.ally.com/trading-full/stocks") #TODO the popup messes thie up
@@ -361,21 +379,6 @@ def tradierExec(accounts, tickers):
             )
             json_response = response.json()
 
-#TODO setup sell
-def stocktwitsExec(tickers):
-    for ticker in tickers:
-        try:
-            driver.get("https://stocktwits.com/symbol/"+ ticker[0])
-            driver.find_element(By.NAME, "quantity").send_keys(ticker[2])
-
-            #review
-            driver.find_element(By.CSS_SELECTOR, ".Button_lg__pKIqa")
-
-            #complete
-            driver.find_element(By.CSS_SELECTOR, ".Button_lg__pKIqa")
-        except:
-            print(ticker[0] + "not"+str(ticker[3])+ " in stoocktwits")
-
 #TODO
 def sofiLogin():
     return
@@ -406,9 +409,12 @@ def sofiExec(accounts, tickers):
                 print(ticker[0] + "not"+str(ticker[3])+ " in " + str(account) + "in sofi")
 
 def robinhoodLogin():
-    driver.get("https://robinhood.com/login")
-    slowSleep()
-    driver.find_element(By.XPATH, "//*[@id='submitbutton']/div/button").click()
+    try:
+        driver.get("https://robinhood.com/login")
+        slowSleep()
+        driver.find_element(By.XPATH, "//*[@id='submitbutton']/div/button").click()
+    except:
+        loginLog('Robinhood')
 
 def robinhoodExec(accounts, tickers):
     for ticker in tickers:
@@ -464,8 +470,8 @@ def publicExec(tickers):
             fastSleep()
             driver.find_element(By.XPATH, "/html/body/div[11]/div[3]/div/div/div/div/div[2]/button").click()
         except:
-            errorLog(ticker[0],ticker[3],'Public')
-            print(ticker[0] + "not"+str(ticker[3])+ " in public")
+            errorLog(ticker,'Public')
+            #print(ticker[0] + "not"+str(ticker[3])+ " in public")
 
 
 
