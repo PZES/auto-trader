@@ -42,39 +42,42 @@ def schwabExec(accounts, tickers):
     driver.get("https://client.schwab.com/app/trade/tom/#/trade")
     slowSleep()
     #loop through accounts
-    for i in accounts:
+    for account in accounts:
         driver.find_element(By.XPATH, "//sdps-account-selector/div/div/button").click()
-        print(i)
-        driver.find_element(By.XPATH, "//span[contains(.,\'"+i+"\')]").click()
+        print(account)
+        driver.find_element(By.XPATH, "//span[contains(.,\'"+ account +"\')]").click()
 
         #loop through tickers
         for ticker in tickers:
-            slowSleep()
-            tickerBox = driver.find_element(By.ID, "_txtSymbol")
-            tickerBox.send_keys(ticker[0])
-            tickerBox.send_keys(Keys.ENTER)
-            fastSleep()
-            #action
-            actionBox = Select(driver.find_element(By.ID, "_action"))
-            if(ticker[3]):
-                #buy
-                actionBox.select_by_visible_text('Buy')   
-            else:
-                #sell
-                actionBox.select_by_visible_text('Sell') 
-            
-            #quantity
-            #ticker[2]
-            #TODO
+            try:
+                slowSleep()
+                tickerBox = driver.find_element(By.ID, "_txtSymbol")
+                tickerBox.send_keys(ticker[0])
+                tickerBox.send_keys(Keys.ENTER)
+                fastSleep()
+                #action
+                actionBox = Select(driver.find_element(By.ID, "_action"))
+                if(ticker[3]):
+                    #buy
+                    actionBox.select_by_visible_text('Buy')   
+                else:
+                    #sell
+                    actionBox.select_by_visible_text('Sell') 
+                
+                #quantity
+                #ticker[2]
+                #TODO
 
-            #review
-            driver.find_element(By.CSS_SELECTOR, ".mcaio-order--reviewbtn").click()
-            #place
-            slowSleep()
-            driver.find_element(By.ID, "mtt-place-button").click()
-            #place another
-            slowSleep()
-            driver.find_element(By.CSS_SELECTOR, ".mcaio--mcaio-cta-buttons-anothertrade").click()
+                #review
+                driver.find_element(By.CSS_SELECTOR, ".mcaio-order--reviewbtn").click()
+                #place
+                slowSleep()
+                driver.find_element(By.ID, "mtt-place-button").click()
+                #place another
+                slowSleep()
+                driver.find_element(By.CSS_SELECTOR, ".mcaio--mcaio-cta-buttons-anothertrade").click()
+            except:
+                errorLog(ticker,account+' in Schwab')
 
 def fidelityLogin():
     try:
@@ -104,7 +107,7 @@ def fidelityExec(accounts, tickers):
                 #place
                 driver.find_element(By.ID, "placeOrderBtn").click()
             except:
-                print(ticker[0] + "not"+str(ticker[3])+ " in " + account + "in vanguard")
+                errorLog(ticker,account+' in Fidelity')
 
 def vanguardLogin():
     try:
@@ -176,7 +179,7 @@ def vanguardExec(accounts, tickers):
                 driver.find_element(By.ID,"baseForm:submitButtonInput").click()
                 fastSleep()
             except:
-                print(ticker[0] + "not "+str(ticker[3])+ " in " + i + " in vanguard")
+                errorLog(ticker,account+' in Vanguard')
 
 def wellsFargoLogin():
     try:
@@ -264,7 +267,8 @@ def wellsFargoExec(accounts, tickers):
                 slowSleep()
                 driver.find_element(By.CSS_SELECTOR, ".btn-wfa-primary").click()
             except:
-                print(ticker[0] + "not"+str(ticker[3])+ " in " + str(i) + "in wells fargo")
+                errorLog(ticker,account+' in Wells Fargo')
+                #print(ticker[0] + "not"+str(ticker[3])+ " in " + str(i) + "in wells fargo")
 
 def firstradeLogin():
     try:
@@ -302,7 +306,8 @@ def firstradeExec(accounts, tickers):
                 driver.find_element(By.CSS_SELECTOR, ".submitted_placeorder_bnt").click()
                 fastSleep()
             except:
-                print(ticker[0] + "not"+str(ticker[3])+ " in " + account + "in firstrade")
+                errorLog(ticker,account+' in Firstrade')
+                #print(ticker[0] + "not"+str(ticker[3])+ " in " + account + "in firstrade")
 
 def allyLogin():
     try:
@@ -357,6 +362,7 @@ def allyExec(accounts, tickers):
             driver.find_element(By.XPATH, "//*[@id='trade-complete']/div[3]/ally-button/button").click()
             fastSleep()
             #except:
+                #errorLog(ticker,account+' in Ally')
                 #print(ticker[0] + "not"+str(ticker[3])+ " in " + account + "in ally")
 
 def tradierExec(accounts, tickers):
@@ -406,7 +412,8 @@ def sofiExec(accounts, tickers):
                 fastSleep()
                 driver.find_element(By.XPATH, "/html/body/div/div/main/div[2]/div[2]/div[3]/div/div[2]/button").click()
             except:
-                print(ticker[0] + "not"+str(ticker[3])+ " in " + str(account) + "in sofi")
+                errorLog(ticker,account+' in Sofi')
+                #print(ticker[0] + "not"+str(ticker[3])+ " in " + str(account) + "in sofi")
 
 def robinhoodLogin():
     try:
@@ -443,6 +450,7 @@ def robinhoodExec(accounts, tickers):
             driver.find_element(By.XPATH, "//button[contains(.,\'Done\')]").click()
             slowSleep()
             #except:
+                #errorLog(ticker,account+' in Robinhood')
                 #print(ticker[0] + "not"+str(ticker[3])+ " in " + str(i) + "in robinhood")
 
 
