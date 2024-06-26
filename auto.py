@@ -11,24 +11,17 @@ from selenium.webdriver.common.keys import Keys
 from helpers import *
 
 import requests,math
+
 Buy = True
 Sell = False
-#ally ****WORKS**** TODO change limit to be ask instead of bid 
-#fidelity ****WORKS**** on all but margin
-#firstrade ****WORKS**** TODO change limit to be ask instead of bid
-#public 1.00 min on website ****WORKS**** TODO add sell
-#robinhood  ****WORKS**** TODO add sell
-#schwab setup ****WORKS**** TODO add quantity >1 
-#sofi ****WORKS TODO setup login and sell
-#stocktwits ****WORKS**** TODO add sell
 
-#options = uc.ChromeOptions() 
-#options.debugger_address = "127.0.0.1:9222" 
-#driver = uc.Chrome(options=options)
-options = Options()
-options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+options = uc.ChromeOptions() 
+options.debugger_address = "127.0.0.1:9222" 
+driver = uc.Chrome(options=options)
+#options = Options()
+#options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
 
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+#driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 def schwabLogin():
     #schwab login page
@@ -471,6 +464,7 @@ def publicExec(tickers):
             fastSleep()
             driver.find_element(By.XPATH, "/html/body/div[11]/div[3]/div/div/div/div/div[2]/button").click()
         except:
+            errorLog(ticker[0],ticker[3],'Public')
             print(ticker[0] + "not"+str(ticker[3])+ " in public")
 
 

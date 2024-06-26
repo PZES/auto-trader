@@ -3,7 +3,7 @@ from tkinter import messagebox, Text
 from auto import *
 from data import accounts
 from helpers import setTickers
-
+#google-chrome-stable --remote-debugging-port=9222
 def authenticate_platform(platform, tickers):
     # Perform platform-specific login
     login_functions[platform]()
@@ -54,7 +54,7 @@ def run_selected_platforms():
         return
     print(tickersInput)
     tickers = setTickers(tickersInput)
-
+    print(tickers)
     for platform in selectedPlatforms:
         authenticate_platform(platform, tickers)
 

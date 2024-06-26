@@ -28,7 +28,7 @@ def getPrice(ticker):
     bid = float(f"{float(json_response.get('quotes').get('quote').get('bid')):.2f}")
     ask = float(f"{float(json_response.get('quotes').get('quote').get('ask')):.2f}")
 
-    #just checking if the bid ask is really messed up
+    #dont buy at ask if stock price is messed up
     if(bid/ask > .90):
         #buy/sell at market price
         
@@ -37,30 +37,32 @@ def getPrice(ticker):
         return[bid,ask]
 
 #changes the tickers from a user input string to a 2d array
-def setTickers(tickers):
+def setTickers(input):
     bs = None
-    tickers = tickers.split('\n')
-    for i in range(len(tickers)):
-        if tickers[i] == '':
+    input = input.split('\n')
+    tickers = []
+    for i in range(len(input)):
+        if input[i] == '':
             continue
         #buying or selling
-        if tickers[i] in ['b','s']:
-            bs = (tickers[i] == 'b')
+        if input[i] in ['b','s']:
+            bs = (input[i] == 'b')
             continue
         if bs is None:
             return
-        tickers[i] = tickers[i].split(",")
+        input[i] = input[i].split(",")
         #ticker or ticker,quant
-        tickers[i].append(bs)
+        input[i].append(bs)
         #ticker,T/F or ticker,quant,T/F
 
         #if quantity not set, set it to 1
-        if(len(tickers[i]) == 2):
-            tickers[i].insert(1, 1)
+        if(len(input[i]) == 2):
+            input[i].insert(1, 1)
         #ticker,quant,T/F
-        price = getPrice(tickers[i][0])[0] if bs else getPrice(tickers[i][0])[1]
-        tickers[i] = tickers[i][:1]+[price]+tickers[i][1:]
+        price = getPrice(input[i][0])[0] if bs else getPrice(input[i][0])[1]
+        input[i] = input[i][:1]+[price]+input[i][1:]
         #ticker,price,quant,T/F
+        tickers.append(input[i])
 
     return(tickers)
 
@@ -69,4 +71,4 @@ def loginLog():
         print()
 def errorLog(ticker, bs, platform):
     with open("data.log", "a") as f:  # Open file in append mode ("a")
-        (print('unable to ','buy ' if bs else 'sell ', ticker, 'on ', platform,  file=f))
+        (print('unable to','buy' if bs else 'sell', ticker, 'on', platform,  file=f))
