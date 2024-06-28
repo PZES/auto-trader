@@ -20,7 +20,6 @@ options.debugger_address = "127.0.0.1:9222"
 driver = uc.Chrome(options=options)
 #options = Options()
 #options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
-
 #driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 def schwabLogin():
@@ -461,7 +460,6 @@ def robinhoodExec(accounts, tickers):
             #except:
                 #errorLog(ticker,account+' in Robinhood')
                 #print(ticker[0] + "not"+str(ticker[3])+ " in " + str(i) + "in robinhood")
-
 
 #TODO sell
 def publicExec(tickers):

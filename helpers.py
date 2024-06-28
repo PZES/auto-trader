@@ -2,6 +2,7 @@ from time import sleep
 import random
 import requests
 from data import accounts
+from datetime import datetime
 import sqlite3
 
 def fastSleep():
@@ -77,7 +78,31 @@ def errorLog(ticker, platform):
     with open("data.log", "a") as f:  # Open file in append mode ("a")
         print('unable to','buy' if ticker[3] else 'sell', ticker[0], 'on', platform,  file=f)
 
+import sqlite3
+from datetime import datetime
+
 def goodDB(tickerlist, platform):
+    # Establish database connection and cursor
+    conn = sqlite3.connect('tradingLog.db')
+    cursor = conn.cursor()
+    
+    # Create the log table if it doesn't exist
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        action TEXT,
+        ticker TEXT,
+        platform TEXT,
+        buy_date TEXT,
+        buy_price REAL,
+        sell_date TEXT,
+        sell_price REAL,
+        profit REAL
+    )
+    ''')
+    conn.commit()
+    
+    # Extract ticker details from the list
     bs = tickerlist[3]
     price = tickerlist[1]
     ticker = tickerlist[0]
@@ -85,9 +110,9 @@ def goodDB(tickerlist, platform):
     
     if bs:  # If 'buy'
         cursor.execute('''
-        INSERT INTO log (action, ticker, platform, buy_date)
-        VALUES (?, ?, ?, ?)
-        ''', ('buy', ticker, platform, now))
+        INSERT INTO log (action, ticker, platform, buy_date, buy_price)
+        VALUES (?, ?, ?, ?, ?)
+        ''', ('buy', ticker, platform, now, price))
     else:  # If 'sell'
         # Check if a previous sell operation exists for the same ticker and platform
         cursor.execute('''
@@ -95,30 +120,33 @@ def goodDB(tickerlist, platform):
         WHERE action = 'sell' AND ticker = ? AND platform = ?
         ''', (ticker, platform))
         
-        sellRecord = cursor.fetchone()
-        if sellRecord:
+        sell_record = cursor.fetchone()
+        if sell_record:
             print(f"A sell operation for {ticker} on {platform} has already been performed.")
         else:
             # Proceed with sell operation
             cursor.execute('''
-            SELECT id, buy_date FROM log
+            SELECT id, buy_price, buy_date FROM log
             WHERE action = 'buy' AND ticker = ? AND platform = ?
             ORDER BY id DESC
             LIMIT 1
             ''', (ticker, platform))
             
-            buyRecord = cursor.fetchone()
-            if buyRecord:
-                buyId = buyRecord[0]
-                buyDate = buyRecord[1]
-                profit = price - cursor.execute('SELECT sell_price FROM log WHERE id=?', (buyId,)).fetchone()[0]
+            buy_record = cursor.fetchone()
+            if buy_record:
+                buy_id = buy_record[0]
+                buy_price = buy_record[1]
+                buy_date = buy_record[2]
+                profit = price - buy_price
                 cursor.execute('''
                 UPDATE log
                 SET action = 'sell', sell_date = ?, sell_price = ?, profit = ?
                 WHERE id = ?
-                ''', (now, price, profit, buyId))
+                ''', (now, price, profit, buy_id))
             else:
                 print(f"No buy operation found for {ticker} on {platform}.")
     
-    # Commit the changes to the database
+    # Commit the changes to the database and close the connection
     conn.commit()
+    cursor.close()
+    conn.close()
