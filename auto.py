@@ -21,6 +21,259 @@ driver = uc.Chrome(options=options)
 # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 
+def allyLogin():
+    try:
+        driver.get("https://secure.ally.com/")
+        slowSleep()
+        driver.find_element(By.XPATH, "//*[contains(@id,'login-button')]").click()
+    except:
+        loginLog("Ally")
+
+
+def allyExec(accounts, tickers):
+    # driver.get("https://live.invest.ally.com/trading-full/stocks") #TODO the popup messes thie up
+    slowSleep()
+    for account in accounts:
+        try:
+            driver.find_element(
+                By.XPATH, "//*[@id='account-details-account-number']/select"
+            ).click()
+            Select(
+                driver.find_element(
+                    By.XPATH, "//*[@id='account-details-account-number']/select"
+                )
+            ).select_by_visible_text(account)
+        except:
+            print("changing account failed")
+        for ticker in tickers:
+            # try:
+            tickerBox = driver.find_element(By.CSS_SELECTOR, ".styled-input")
+            tickerBox.click()
+            tickerBox.send_keys(ticker[0])
+            tickerBox.send_keys(Keys.ENTER)
+            fastSleep()
+
+            if ticker[3]:
+                driver.find_element(By.XPATH, "//span[contains(.,'Buy')]").click()
+            else:
+                driver.find_element(By.XPATH, "//span[contains(.,'Sell')]").click()
+
+            quant = driver.find_element(By.CSS_SELECTOR, ".stepper-input")
+            quant.send_keys(Keys.BACKSPACE)
+            quant.send_keys(Keys.BACKSPACE)
+            quant.send_keys(Keys.BACKSPACE)
+            quant.send_keys(ticker[2])
+
+            driver.find_element(By.CSS_SELECTOR, "#stock-limit > span").click()
+
+            limitBox = driver.find_element(
+                By.CSS_SELECTOR, "#stock-limit-input .stepper-input"
+            )
+
+            fastSleep()
+            # preview
+            driver.find_element(
+                By.XPATH,
+                "//*[@id='content']/div/div[3]/ally-card/section/div/section-order-summary/div[2]/div/div[1]/ally-button/button",
+            ).click()
+            slowSleep()
+
+            # place order
+            driver.find_element(
+                By.XPATH, "//*[@id='trade-preview']/div/table/tbody/tr/td[2]/div/button"
+            ).click()
+            slowSleep()
+
+            # okay
+            driver.find_element(
+                By.XPATH, "//*[@id='trade-complete']/div[3]/ally-button/button"
+            ).click()
+            fastSleep()
+            goodDB(ticker, account + " in Ally")
+            # except:
+            # errorLog(ticker,account+' in Ally')
+            # print(ticker[0] + "not"+str(ticker[3])+ " in " + account + "in ally")
+
+
+def fidelityLogin():
+    try:
+        driver.get(
+            "https://digital.fidelity.com/prgw/digital/login/full-page?AuthRedUrl=https://digital.fidelity.com/ftgw/digital/portfolio/summary"
+        )
+        slowSleep()
+        driver.find_element(By.CSS_SELECTOR, ".main-container").click()
+        driver.find_element(By.CSS_SELECTOR, ".pvd-button__contents").click()
+    except:
+        loginLog("Fidelity")
+
+
+def fidelityExec(accounts, tickers):
+    for account in accounts:
+        for ticker in tickers:
+            try:
+                if ticker[3]:
+                    act = "B"
+                else:
+                    act = "S"
+                driver.get(
+                    "https://digital.fidelity.com/ftgw/digital/trade-equity/index?ORDER_TYPE=E&ACCOUNT="
+                    + account
+                    + "&SYMBOL="
+                    + ticker[0]
+                    + "&PRICE_TYPE=L&ORDER_ACTION="
+                    + act
+                    + "&QTY="
+                    + str(ticker[2])
+                )  #
+                slowSleep()
+                # set limit price
+                driver.find_element(By.ID, "eqt-mts-limit-price").send_keys(ticker[1])
+                fastSleep()
+                # preview
+                driver.find_element(
+                    By.CSS_SELECTOR, "#previewOrderBtn .pvd3-button-root"
+                ).click()
+                slowSleep()
+                # place
+                driver.find_element(By.ID, "placeOrderBtn").click()
+                goodDB(ticker, account + " in Fidelity")
+            except:
+                errorLog(ticker, account + " in Fidelity")
+
+
+def firstradeLogin():
+    try:
+        driver.get("https://invest.firstrade.com/cgi-bin/login")
+        slowSleep()
+        driver.find_element(By.ID, "loginButton").click()
+    except:
+        loginLog("Firstrade")
+
+
+def firstradeExec(accounts, tickers):
+    driver.get("https://invest.firstrade.com/cgi-bin/main#/cgi-bin/stock_order")
+    slowSleep()
+    for account in accounts:
+        try:
+            Select(driver.find_element(By.ID, "accountId1")).select_by_visible_text(
+                account
+            )
+            fastSleep()
+        except:
+            print("change account failed")
+        for ticker in tickers:
+            try:
+                if ticker[3]:
+                    driver.find_element(By.ID, "transactionType_Buy1").click()
+                else:
+                    driver.find_element(By.ID, "transactionType_Sell1").click()
+                # quantity
+                driver.find_element(By.ID, "quantity1").send_keys(ticker[2])
+                # ticker
+                driver.find_element(By.ID, "symbol1").send_keys(ticker[0])
+                driver.find_element(By.ID, "limitPrice1").click()
+                # submit
+                slowSleep()
+                driver.find_element(By.ID, "submitOrder1").click()
+                # place another
+                slowSleep()
+                driver.find_element(
+                    By.CSS_SELECTOR, ".submitted_placeorder_bnt"
+                ).click()
+                fastSleep()
+                goodDB(ticker, account + " in Firstrade")
+            except:
+                errorLog(ticker, account + " in Firstrade")
+                # print(ticker[0] + "not"+str(ticker[3])+ " in " + account + "in firstrade")
+
+
+# TODO sell
+def publicExec(tickers):
+    for ticker in tickers:
+        try:
+            driver.get("https://public.com/stocks/" + ticker[0])
+            shares = int(math.ceil(1 / ticker[1]))
+            if shares < ticker[2]:
+                shares = ticker[2]
+            slowSleep()
+            # click buy is default                      /html/body/div/div[1]/div/div/div[2]/div/main/div/div[2]/div[1]/div/div[2]/div/label[2]/span
+            driver.find_element(
+                By.XPATH,
+                "//*[@id='maincontent']/div/div[2]/div[1]/div/div/div/button[1]/span",
+            ).click()
+            fastSleep()
+            driver.find_element(
+                By.XPATH, "/html/body/div[11]/div[3]/div/div/div/div/div[1]/div/button"
+            ).click()
+            fastSleep()
+            driver.find_element(
+                By.XPATH,
+                "/html/body/div[11]/div[3]/div/div/div/div/div[1]/div/div/button[2]",
+            ).click()
+            fastSleep()
+            driver.find_element(
+                By.XPATH,
+                "/html/body/div[11]/div[3]/div/div/div/div/div[4]/div[1]/div/div[1]/input",
+            ).send_keys(shares)
+            fastSleep()
+            driver.find_element(
+                By.XPATH, "/html/body/div[11]/div[3]/div/div/div/div/div[5]/button"
+            ).click()
+            fastSleep()
+            driver.find_element(
+                By.XPATH, "/html/body/div[11]/div[3]/div/div/div/div/div[3]/button"
+            ).click()
+            fastSleep()
+            driver.find_element(
+                By.XPATH, "/html/body/div[11]/div[3]/div/div/div/div/div[2]/button"
+            ).click()
+            goodDB(ticker, "Public")
+        except:
+            errorLog(ticker, "Public")
+            # print(ticker[0] + "not"+str(ticker[3])+ " in public")
+
+
+def robinhoodLogin():
+    try:
+        driver.get("https://robinhood.com/login")
+        slowSleep()
+        driver.find_element(By.XPATH, "//*[@id='submitbutton']/div/button").click()
+    except:
+        loginLog("Robinhood")
+
+
+def robinhoodExec(accounts, tickers):
+    for ticker in tickers:
+        driver.get("https://robinhood.com/stocks/" + ticker[0])
+        slowSleep()
+        for account in accounts:
+            # try:
+            # change account
+            driver.find_element(By.XPATH, "//form/button").click()
+            driver.find_element(By.XPATH, "//p[contains(.,'" + account + "')]").click()
+            if not ticker[3]:
+                driver.find_element(By.XPATH, "//span[contains(.,'Sell')]").click()
+                fastSleep()
+            # quantity
+            driver.find_element(By.NAME, "quantity").click()
+            fastSleep()
+            driver.find_element(By.NAME, "quantity").send_keys("1")
+            fastSleep()
+            # review order
+            driver.find_element(By.XPATH, "//button[@type='submit']").click()
+            slowSleep()
+            # submit
+            driver.find_element(By.XPATH, "//button[@type='submit']").click()
+            slowSleep()
+            # done
+            driver.find_element(By.XPATH, "//button[contains(.,'Done')]").click()
+            slowSleep()
+            goodDB(ticker, account + " in Robinhood")
+            # except:
+            # errorLog(ticker,account+' in Robinhood')
+            # print(ticker[0] + "not"+str(ticker[3])+ " in " + str(i) + "in robinhood")
+
+
 def schwabLogin():
     # schwab login page
     try:
@@ -82,50 +335,91 @@ def schwabExec(accounts, tickers):
                 errorLog(ticker, account + " in Schwab")
 
 
-def fidelityLogin():
-    try:
-        driver.get(
-            "https://digital.fidelity.com/prgw/digital/login/full-page?AuthRedUrl=https://digital.fidelity.com/ftgw/digital/portfolio/summary"
-        )
-        slowSleep()
-        driver.find_element(By.CSS_SELECTOR, ".main-container").click()
-        driver.find_element(By.CSS_SELECTOR, ".pvd-button__contents").click()
-    except:
-        loginLog("Fidelity")
+# TODO
+def sofiLogin():
+    return
 
 
-def fidelityExec(accounts, tickers):
-    for account in accounts:
-        for ticker in tickers:
+# TODO setup sell
+def sofiExec(accounts, tickers):
+    for ticker in tickers:
+        driver.get("https://www.sofi.com/wealth/app/stock/" + ticker[0])
+        for account in range(accounts):
             try:
-                if ticker[3]:
-                    act = "B"
-                else:
-                    act = "S"
-                driver.get(
-                    "https://digital.fidelity.com/ftgw/digital/trade-equity/index?ORDER_TYPE=E&ACCOUNT="
-                    + account
-                    + "&SYMBOL="
-                    + ticker[0]
-                    + "&PRICE_TYPE=L&ORDER_ACTION="
-                    + act
-                    + "&QTY="
-                    + str(ticker[2])
-                )  #
                 slowSleep()
-                # set limit price
-                driver.find_element(By.ID, "eqt-mts-limit-price").send_keys(ticker[1])
-                fastSleep()
-                # preview
+                buy = driver.find_element(
+                    By.XPATH,
+                    "//*[@id='mainContent']/div[2]/div[2]/div[2]/div[2]/div/button",
+                )
+                if not (buy.is_enabled()):
+                    print("not on SOFI")
+                    return
                 driver.find_element(
-                    By.CSS_SELECTOR, "#previewOrderBtn .pvd3-button-root"
+                    By.XPATH,
+                    "//*[@id='mainContent']/div[2]/div[2]/div[2]/div[2]/div/button",
+                ).click()
+                fastSleep()
+                Select(
+                    driver.find_element(
+                        By.XPATH,
+                        "/html/body/div/div/main/div[2]/div[2]/div[3]/div/div[1]/div/select",
+                    )
+                ).select_by_visible_text(account)
+                fastSleep()
+                driver.find_element(
+                    By.XPATH,
+                    "/html/body/div/div/main/div[2]/div[2]/div[3]/div/div[2]/input",
+                ).send_keys(ticker[2])
+                driver.find_element(
+                    By.XPATH,
+                    "/html/body/div/div/main/div[2]/div[2]/div[3]/div/div[4]/div[2]/input",
+                ).send_keys(ticker[1])
+                driver.find_element(
+                    By.CSS_SELECTOR, ".StyledActionButton-hdOdyk"
                 ).click()
                 slowSleep()
-                # place
-                driver.find_element(By.ID, "placeOrderBtn").click()
-                goodDB(ticker, account + " in Fidelity")
+                driver.find_element(
+                    By.CSS_SELECTOR, ".StyledActionButton-hdOdyk"
+                ).click()
+                fastSleep()
+                driver.find_element(
+                    By.XPATH,
+                    "/html/body/div/div/main/div[2]/div[2]/div[3]/div/div[2]/button",
+                ).click()
+                goodDB(ticker, account + " in Sofi")
             except:
-                errorLog(ticker, account + " in Fidelity")
+                errorLog(ticker, account + " in Sofi")
+                # print(ticker[0] + "not"+str(ticker[3])+ " in " + str(account) + "in sofi")
+
+
+def tradierExec(accounts, tickers):
+    tradierToken = accounts[0]
+    accounts = accounts[1:]
+    for account in accounts:
+        for ticker in tickers:
+            if ticker[3]:
+                side = "buy"
+            else:
+                side = "sell"
+            headers = {
+                "Authorization": "Bearer {}".format(tradierToken),
+                "Accept": "application/json",
+            }
+            url = "https://api.tradier.com/v1/accounts/{}/orders".format(account)
+            response = requests.post(
+                url,
+                data={
+                    "class": "equity",
+                    "symbol": ticker[0],
+                    "side": side,
+                    "quantity": ticker[2],
+                    "type": "market",
+                    "duration": "day",
+                },
+                headers=headers,
+            )
+            json_response = response.json()
+            goodDB(ticker, account + " in Tradier")
 
 
 def vanguardLogin():
@@ -320,297 +614,3 @@ def wellsFargoExec(accounts, tickers):
             except:
                 errorLog(ticker, str(i) + " in Wells Fargo")
                 # print(ticker[0] + "not"+str(ticker[3])+ " in " + str(i) + "in wells fargo")
-
-
-def firstradeLogin():
-    try:
-        driver.get("https://invest.firstrade.com/cgi-bin/login")
-        slowSleep()
-        driver.find_element(By.ID, "loginButton").click()
-    except:
-        loginLog("Firstrade")
-
-
-def firstradeExec(accounts, tickers):
-    driver.get("https://invest.firstrade.com/cgi-bin/main#/cgi-bin/stock_order")
-    slowSleep()
-    for account in accounts:
-        try:
-            Select(driver.find_element(By.ID, "accountId1")).select_by_visible_text(
-                account
-            )
-            fastSleep()
-        except:
-            print("change account failed")
-        for ticker in tickers:
-            try:
-                if ticker[3]:
-                    driver.find_element(By.ID, "transactionType_Buy1").click()
-                else:
-                    driver.find_element(By.ID, "transactionType_Sell1").click()
-                # quantity
-                driver.find_element(By.ID, "quantity1").send_keys(ticker[2])
-                # ticker
-                driver.find_element(By.ID, "symbol1").send_keys(ticker[0])
-                driver.find_element(By.ID, "limitPrice1").click()
-                # submit
-                slowSleep()
-                driver.find_element(By.ID, "submitOrder1").click()
-                # place another
-                slowSleep()
-                driver.find_element(
-                    By.CSS_SELECTOR, ".submitted_placeorder_bnt"
-                ).click()
-                fastSleep()
-                goodDB(ticker, account + " in Firstrade")
-            except:
-                errorLog(ticker, account + " in Firstrade")
-                # print(ticker[0] + "not"+str(ticker[3])+ " in " + account + "in firstrade")
-
-
-def allyLogin():
-    try:
-        driver.get("https://secure.ally.com/")
-        slowSleep()
-        driver.find_element(By.XPATH, "//*[contains(@id,'login-button')]").click()
-    except:
-        loginLog("Ally")
-
-
-def allyExec(accounts, tickers):
-    # driver.get("https://live.invest.ally.com/trading-full/stocks") #TODO the popup messes thie up
-    slowSleep()
-    for account in accounts:
-        try:
-            driver.find_element(
-                By.XPATH, "//*[@id='account-details-account-number']/select"
-            ).click()
-            Select(
-                driver.find_element(
-                    By.XPATH, "//*[@id='account-details-account-number']/select"
-                )
-            ).select_by_visible_text(account)
-        except:
-            print("changing account failed")
-        for ticker in tickers:
-            # try:
-            tickerBox = driver.find_element(By.CSS_SELECTOR, ".styled-input")
-            tickerBox.click()
-            tickerBox.send_keys(ticker[0])
-            tickerBox.send_keys(Keys.ENTER)
-            fastSleep()
-
-            if ticker[3]:
-                driver.find_element(By.XPATH, "//span[contains(.,'Buy')]").click()
-            else:
-                driver.find_element(By.XPATH, "//span[contains(.,'Sell')]").click()
-
-            quant = driver.find_element(By.CSS_SELECTOR, ".stepper-input")
-            quant.send_keys(Keys.BACKSPACE)
-            quant.send_keys(Keys.BACKSPACE)
-            quant.send_keys(Keys.BACKSPACE)
-            quant.send_keys(ticker[2])
-
-            driver.find_element(By.CSS_SELECTOR, "#stock-limit > span").click()
-
-            limitBox = driver.find_element(
-                By.CSS_SELECTOR, "#stock-limit-input .stepper-input"
-            )
-
-            fastSleep()
-            # preview
-            driver.find_element(
-                By.XPATH,
-                "//*[@id='content']/div/div[3]/ally-card/section/div/section-order-summary/div[2]/div/div[1]/ally-button/button",
-            ).click()
-            slowSleep()
-
-            # place order
-            driver.find_element(
-                By.XPATH, "//*[@id='trade-preview']/div/table/tbody/tr/td[2]/div/button"
-            ).click()
-            slowSleep()
-
-            # okay
-            driver.find_element(
-                By.XPATH, "//*[@id='trade-complete']/div[3]/ally-button/button"
-            ).click()
-            fastSleep()
-            goodDB(ticker, account + " in Ally")
-            # except:
-            # errorLog(ticker,account+' in Ally')
-            # print(ticker[0] + "not"+str(ticker[3])+ " in " + account + "in ally")
-
-
-def tradierExec(accounts, tickers):
-    tradierToken = accounts[0]
-    accounts = accounts[1:]
-    for account in accounts:
-        for ticker in tickers:
-            if ticker[3]:
-                side = "buy"
-            else:
-                side = "sell"
-            headers = {
-                "Authorization": "Bearer {}".format(tradierToken),
-                "Accept": "application/json",
-            }
-            url = "https://api.tradier.com/v1/accounts/{}/orders".format(account)
-            response = requests.post(
-                url,
-                data={
-                    "class": "equity",
-                    "symbol": ticker[0],
-                    "side": side,
-                    "quantity": ticker[2],
-                    "type": "market",
-                    "duration": "day",
-                },
-                headers=headers,
-            )
-            json_response = response.json()
-            goodDB(ticker, account + " in Tradier")
-
-
-# TODO
-def sofiLogin():
-    return
-
-
-# TODO setup sell
-def sofiExec(accounts, tickers):
-    for ticker in tickers:
-        driver.get("https://www.sofi.com/wealth/app/stock/" + ticker[0])
-        for account in range(accounts):
-            try:
-                slowSleep()
-                buy = driver.find_element(
-                    By.XPATH,
-                    "//*[@id='mainContent']/div[2]/div[2]/div[2]/div[2]/div/button",
-                )
-                if not (buy.is_enabled()):
-                    print("not on SOFI")
-                    return
-                driver.find_element(
-                    By.XPATH,
-                    "//*[@id='mainContent']/div[2]/div[2]/div[2]/div[2]/div/button",
-                ).click()
-                fastSleep()
-                Select(
-                    driver.find_element(
-                        By.XPATH,
-                        "/html/body/div/div/main/div[2]/div[2]/div[3]/div/div[1]/div/select",
-                    )
-                ).select_by_visible_text(account)
-                fastSleep()
-                driver.find_element(
-                    By.XPATH,
-                    "/html/body/div/div/main/div[2]/div[2]/div[3]/div/div[2]/input",
-                ).send_keys(ticker[2])
-                driver.find_element(
-                    By.XPATH,
-                    "/html/body/div/div/main/div[2]/div[2]/div[3]/div/div[4]/div[2]/input",
-                ).send_keys(ticker[1])
-                driver.find_element(
-                    By.CSS_SELECTOR, ".StyledActionButton-hdOdyk"
-                ).click()
-                slowSleep()
-                driver.find_element(
-                    By.CSS_SELECTOR, ".StyledActionButton-hdOdyk"
-                ).click()
-                fastSleep()
-                driver.find_element(
-                    By.XPATH,
-                    "/html/body/div/div/main/div[2]/div[2]/div[3]/div/div[2]/button",
-                ).click()
-                goodDB(ticker, account + " in Sofi")
-            except:
-                errorLog(ticker, account + " in Sofi")
-                # print(ticker[0] + "not"+str(ticker[3])+ " in " + str(account) + "in sofi")
-
-
-def robinhoodLogin():
-    try:
-        driver.get("https://robinhood.com/login")
-        slowSleep()
-        driver.find_element(By.XPATH, "//*[@id='submitbutton']/div/button").click()
-    except:
-        loginLog("Robinhood")
-
-
-def robinhoodExec(accounts, tickers):
-    for ticker in tickers:
-        driver.get("https://robinhood.com/stocks/" + ticker[0])
-        slowSleep()
-        for account in accounts:
-            # try:
-            # change account
-            driver.find_element(By.XPATH, "//form/button").click()
-            driver.find_element(By.XPATH, "//p[contains(.,'" + account + "')]").click()
-            if not ticker[3]:
-                driver.find_element(By.XPATH, "//span[contains(.,'Sell')]").click()
-                fastSleep()
-            # quantity
-            driver.find_element(By.NAME, "quantity").click()
-            fastSleep()
-            driver.find_element(By.NAME, "quantity").send_keys("1")
-            fastSleep()
-            # review order
-            driver.find_element(By.XPATH, "//button[@type='submit']").click()
-            slowSleep()
-            # submit
-            driver.find_element(By.XPATH, "//button[@type='submit']").click()
-            slowSleep()
-            # done
-            driver.find_element(By.XPATH, "//button[contains(.,'Done')]").click()
-            slowSleep()
-            goodDB(ticker, account + " in Robinhood")
-            # except:
-            # errorLog(ticker,account+' in Robinhood')
-            # print(ticker[0] + "not"+str(ticker[3])+ " in " + str(i) + "in robinhood")
-
-
-# TODO sell
-def publicExec(tickers):
-    for ticker in tickers:
-        try:
-            driver.get("https://public.com/stocks/" + ticker[0])
-            shares = int(math.ceil(1 / ticker[1]))
-            if shares < ticker[2]:
-                shares = ticker[2]
-            slowSleep()
-            # click buy is default                      /html/body/div/div[1]/div/div/div[2]/div/main/div/div[2]/div[1]/div/div[2]/div/label[2]/span
-            driver.find_element(
-                By.XPATH,
-                "//*[@id='maincontent']/div/div[2]/div[1]/div/div/div/button[1]/span",
-            ).click()
-            fastSleep()
-            driver.find_element(
-                By.XPATH, "/html/body/div[11]/div[3]/div/div/div/div/div[1]/div/button"
-            ).click()
-            fastSleep()
-            driver.find_element(
-                By.XPATH,
-                "/html/body/div[11]/div[3]/div/div/div/div/div[1]/div/div/button[2]",
-            ).click()
-            fastSleep()
-            driver.find_element(
-                By.XPATH,
-                "/html/body/div[11]/div[3]/div/div/div/div/div[4]/div[1]/div/div[1]/input",
-            ).send_keys(shares)
-            fastSleep()
-            driver.find_element(
-                By.XPATH, "/html/body/div[11]/div[3]/div/div/div/div/div[5]/button"
-            ).click()
-            fastSleep()
-            driver.find_element(
-                By.XPATH, "/html/body/div[11]/div[3]/div/div/div/div/div[3]/button"
-            ).click()
-            fastSleep()
-            driver.find_element(
-                By.XPATH, "/html/body/div[11]/div[3]/div/div/div/div/div[2]/button"
-            ).click()
-            goodDB(ticker, "Public")
-        except:
-            errorLog(ticker, "Public")
-            # print(ticker[0] + "not"+str(ticker[3])+ " in public")
