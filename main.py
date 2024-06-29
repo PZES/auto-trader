@@ -3,10 +3,13 @@ from tkinter import messagebox, Text
 from auto import *
 from data import accounts
 from helpers import setTickers
-#google-chrome-stable --remote-debugging-port=9222
+
+
+# google-chrome-stable --remote-debugging-port=9222
 def authenticate_platform(platform, tickers):
     # Perform platform-specific login
-    login_functions[platform]()
+    if login_functions[platform] is not None:
+        login_functions[platform]()
 
     # Create a tkinter Toplevel window for authentication confirmation
     auth_window = tk.Toplevel(root)
@@ -29,6 +32,7 @@ def authenticate_platform(platform, tickers):
     entry.focus_set()
     auth_window.mainloop()
 
+
 def display_log():
     try:
         with open("data.log", "r") as f:
@@ -45,9 +49,14 @@ def display_log():
     # Schedule the next update after 1 second (1000 milliseconds)
     text_log.after(1000, display_log)
 
+
 def run_selected_platforms():
-    selectedPlatforms = [platform for platform, var in checkboxes.items() if var.get() == 1]
-    tickersInput = entry_tickers.get("1.0", tk.END)  # Get tickers input from Text widget
+    selectedPlatforms = [
+        platform for platform, var in checkboxes.items() if var.get() == 1
+    ]
+    tickersInput = entry_tickers.get(
+        "1.0", tk.END
+    )  # Get tickers input from Text widget
 
     if not tickersInput.strip():
         messagebox.showerror("Error", "Please enter tickers before proceeding.")
@@ -57,6 +66,7 @@ def run_selected_platforms():
     print(tickers)
     for platform in selectedPlatforms:
         authenticate_platform(platform, tickers)
+
 
 # Create tkinter window
 root = tk.Tk()
@@ -72,34 +82,42 @@ entry_tickers.pack(pady=5)
 
 # Create checkboxes for each platform
 platforms = [
-    "Ally", "Fidelity", "Firstrade", "Public", 
-    "Robinhood", "Schwab", "SoFi", "Tradier", 
-    "Vanguard", "WellsFargo"
+    "Ally",
+    "Fidelity",
+    "Firstrade",
+    "Public",
+    "Robinhood",
+    "Schwab",
+    "SoFi",
+    "Tradier",
+    "Vanguard",
+    "WellsFargo",
 ]
 
 login_functions = {
-    'Ally': allyLogin,
-    'Fidelity': fidelityLogin,
-    'Firstrade': firstradeLogin,
-    'Robinhood': robinhoodLogin,
-    'Schwab': schwabLogin,
-    'SoFi': sofiLogin,
-    'Tradier': None,
-    'Vanguard': vanguardLogin,
-    'WellsFargo': wellsFargoLogin,
+    "Ally": allyLogin,
+    "Fidelity": fidelityLogin,
+    "Firstrade": firstradeLogin,
+    "Public": None,
+    "Robinhood": robinhoodLogin,
+    "Schwab": schwabLogin,
+    "SoFi": sofiLogin,
+    "Tradier": None,
+    "Vanguard": vanguardLogin,
+    "WellsFargo": wellsFargoLogin,
 }
 
 execute_functions = {
-    'Ally': allyExec,
-    'Fidelity': fidelityExec,
-    'Firstrade': firstradeExec,
-    'Public': publicExec,
-    'Robinhood': robinhoodExec,
-    'Schwab': schwabExec,
-    'SoFi': sofiExec,
-    'Tradier': tradierExec,
-    'Vanguard': vanguardExec,
-    'WellsFargo': wellsFargoExec,
+    "Ally": allyExec,
+    "Fidelity": fidelityExec,
+    "Firstrade": firstradeExec,
+    "Public": publicExec,
+    "Robinhood": robinhoodExec,
+    "Schwab": schwabExec,
+    "SoFi": sofiExec,
+    "Tradier": tradierExec,
+    "Vanguard": vanguardExec,
+    "WellsFargo": wellsFargoExec,
 }
 
 checkboxes = {}
