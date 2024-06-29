@@ -1,9 +1,0 @@
-const claim = document.getElementById("daily-bonus__claim-btn");
-if(claim){claim.click();}
-chumba right after login
-
-
-
-
-document.getElementsByClassName("mt-button-base-root mt-button-co4ntained styles_root__YiphY styles_claimBtn__6uU8x styles_SC___zQGO")[0].click()
-pulsz right after login
