@@ -337,6 +337,7 @@ def schwabExec(accounts, tickers):
 
 # TODO
 def sofiLogin():
+    driver.get("https://sofi.com/login")
     return
 
 

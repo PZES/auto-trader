@@ -7,15 +7,15 @@ import sqlite3
 
 
 def fastSleep():
-    time = random.randint(100, 150)
-    time = float(time / 100)
-    sleep(time)
+    sleepTime = random.randint(100, 150)
+    sleepTime = float(sleepTime / 100)
+    sleep(sleepTime)
 
 
 def slowSleep():
-    time = random.randint(200, 500)
-    time = float(time / 100)
-    sleep(time)
+    sleepTime = random.randint(200, 500)
+    sleepTime = float(sleepTime / 100)
+    sleep(sleepTime)
 
 
 # Powered By Traider
@@ -29,63 +29,63 @@ def getPrice(ticker):
             "Accept": "application/json",
         },
     )
-    json_response = response.json()
-    bid = float(f"{float(json_response.get('quotes').get('quote').get('bid')):.2f}")
-    ask = float(f"{float(json_response.get('quotes').get('quote').get('ask')):.2f}")
+    jsonResponse = response.json()
+    bid = float(f"{float(jsonResponse.get('quotes').get('quote').get('bid')):.2f}")
+    ask = float(f"{float(jsonResponse.get('quotes').get('quote').get('ask')):.2f}")
 
-    # dont buy at ask if stock price is messed up
+    # Don't buy at ask if stock price is messed up
     if bid / ask > 0.80:
-        # buy/sell at market price
+        # Buy/sell at market price
         return [ask, bid]
     else:
         with open("data.log", "a") as f:  # Open file in append mode ("a")
-            print("bid ask spread >20%", ticker, file=f)
-        # TODO ask user for input
+            print("Bid ask spread >20%", ticker, file=f)
+        # TODO: Ask user for input
         return
 
 
-# changes the tickers from a user input string to a 2d array
-def setTickers(input):
+# Changes the tickers from a user input string to a 2D array
+def setTickers(inputString):
     bs = None
-    input = input.split("\n")
+    inputLines = inputString.split("\n")
     tickers = []
-    for i in range(len(input)):
-        if input[i] == "":
+    for line in inputLines:
+        if line == "":
             continue
-        # buying or selling
-        if input[i] in ["b", "s"]:
-            bs = input[i] == "b"
+        # Buying or selling
+        if line in ["b", "s"]:
+            bs = line == "b"
             continue
         if bs is None:
             return
-        input[i] = input[i].split(",")
-        # ticker or ticker,quant
-        input[i].append(bs)
-        # ticker,T/F or ticker,quant,T/F
+        lineParts = line.split(",")
+        # Ticker or ticker,quantity
+        lineParts.append(bs)
+        # Ticker,True/False or ticker,quantity,True/False
 
-        # if quantity not set, set it to 1
-        if len(input[i]) == 2:
-            input[i].insert(1, 1)
-        # ticker,quant,T/F
-        price = getPrice(input[i][0])[0] if bs else getPrice(input[i][0])[1]
+        # If quantity not set, set it to 1
+        if len(lineParts) == 2:
+            lineParts.insert(1, 1)
+        # Ticker,quantity,True/False
+        price = getPrice(lineParts[0])[0] if bs else getPrice(lineParts[0])[1]
         price = price + (price * 0.06)
         price = round(price, 2)
-        input[i] = input[i][:1] + [price] + input[i][1:]
-        # ticker,price,quant,T/F
-        tickers.append(input[i])
+        lineParts = lineParts[:1] + [price] + lineParts[1:]
+        # Ticker,price,quantity,True/False
+        tickers.append(lineParts)
 
     return tickers
 
 
 def loginLog(platform):
     with open("data.log", "a") as f:  # Open file in append mode ("a")
-        print("unabele to login to", platform, file=f)
+        print("Unable to login to", platform, file=f)
 
 
 def errorLog(ticker, platform):
     with open("data.log", "a") as f:  # Open file in append mode ("a")
         print(
-            "unable to",
+            "Unable to",
             "buy" if ticker[3] else "sell",
             ticker[0],
             "on",
@@ -94,11 +94,7 @@ def errorLog(ticker, platform):
         )
 
 
-import sqlite3
-from datetime import datetime
-
-
-def goodDB(tickerlist, platform):
+def goodDb(tickerList, platform):
     # Establish database connection and cursor
     conn = sqlite3.connect("tradingLog.db")
     cursor = conn.cursor()
@@ -122,9 +118,9 @@ def goodDB(tickerlist, platform):
     conn.commit()
 
     # Extract ticker details from the list
-    bs = tickerlist[3]
-    price = tickerlist[1]
-    ticker = tickerlist[0]
+    bs = tickerList[3]
+    price = tickerList[1]
+    ticker = tickerList[0]
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     if bs:  # If 'buy'
@@ -145,8 +141,8 @@ def goodDB(tickerlist, platform):
             (ticker, platform),
         )
 
-        sell_record = cursor.fetchone()
-        if sell_record:
+        sellRecord = cursor.fetchone()
+        if sellRecord:
             print(
                 f"A sell operation for {ticker} on {platform} has already been performed."
             )
@@ -162,19 +158,19 @@ def goodDB(tickerlist, platform):
                 (ticker, platform),
             )
 
-            buy_record = cursor.fetchone()
-            if buy_record:
-                buy_id = buy_record[0]
-                buy_price = buy_record[1]
-                buy_date = buy_record[2]
-                profit = price - buy_price
+            buyRecord = cursor.fetchone()
+            if buyRecord:
+                buyId = buyRecord[0]
+                buyPrice = buyRecord[1]
+                buyDate = buyRecord[2]
+                profit = price - buyPrice
                 cursor.execute(
                     """
                 UPDATE log
                 SET action = 'sell', sell_date = ?, sell_price = ?, profit = ?
                 WHERE id = ?
                 """,
-                    (now, price, profit, buy_id),
+                    (now, price, profit, buyId),
                 )
             else:
                 print(f"No buy operation found for {ticker} on {platform}.")

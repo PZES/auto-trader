@@ -5,96 +5,116 @@ from data import accounts
 from helpers import setTickers
 
 
-# google-chrome-stable --remote-debugging-port=9222
-def authenticate_platform(platform, tickers):
+def authenticatePlatform(platform, tickers):
     # Perform platform-specific login
-    if login_functions[platform] is not None:
-        login_functions[platform]()
+    if loginFunctions[platform] is not None:
+        loginFunctions[platform]()
 
     # Create a tkinter Toplevel window for authentication confirmation
-    auth_window = tk.Toplevel(root)
-    auth_window.title(f"Authenticate {platform}")
+    authWindow = tk.Toplevel(root)
+    authWindow.title(f"Authenticate {platform}")
 
     # Label and Entry widget for user confirmation
-    tk.Label(auth_window, text=f"Press Enter to authenticate {platform}").pack(pady=10)
-    entry = tk.Entry(auth_window)
+    tk.Label(authWindow, text=f"Press Enter to authenticate {platform}").pack(pady=10)
+    entry = tk.Entry(authWindow)
     entry.pack(pady=5)
 
     # Function to handle Enter key press
-    def on_enter(event=None):
-        auth_window.destroy()  # Close the authentication window
-        execute_functions[platform](accounts[platform], tickers)
+    def onEnter(event=None):
+        authWindow.destroy()  # Close the authentication window
+        executeFunctions[platform](accounts[platform], tickers)
 
-    # Bind Enter key press to call on_enter function
-    entry.bind("<Return>", lambda event: on_enter())
+    # Bind Enter key press to call onEnter function
+    entry.bind("<Return>", lambda event: onEnter())
 
     # Focus on the Entry widget and start tkinter main loop for authentication
     entry.focus_set()
-    auth_window.mainloop()
+    authWindow.mainloop()
 
 
-def display_log():
+def displayLog():
     try:
         with open("data.log", "r") as f:
-            log_content = f.read()
-            text_log.delete("1.0", tk.END)  # Clear previous content
-            text_log.insert(tk.END, log_content)  # Insert log content into Text widget
+            logContent = f.read()
+            textLog.delete("1.0", tk.END)  # Clear previous content
+            textLog.insert(tk.END, logContent)  # Insert log content into Text widget
 
             # Auto-scroll to the end of the Text widget
-            text_log.see(tk.END)
+            textLog.see(tk.END)
 
     except FileNotFoundError:
         messagebox.showerror("File Error", "Log file not found.")
 
     # Schedule the next update after 1 second (1000 milliseconds)
-    text_log.after(1000, display_log)
+    textLog.after(1000, displayLog)
 
 
-def run_selected_platforms():
+def runSelectedPlatforms():
     selectedPlatforms = [
         platform for platform, var in checkboxes.items() if var.get() == 1
     ]
-    tickersInput = entry_tickers.get(
-        "1.0", tk.END
-    )  # Get tickers input from Text widget
+    tickersInput = entryTickers.get("1.0", tk.END)  # Get tickers input from Text widget
 
     if not tickersInput.strip():
         messagebox.showerror("Error", "Please enter tickers before proceeding.")
         return
-    print(tickersInput)
     tickers = setTickers(tickersInput)
-    print(tickers)
     for platform in selectedPlatforms:
-        authenticate_platform(platform, tickers)
+        authenticatePlatform(platform, tickers)
 
 
-# Create tkinter window
-root = tk.Tk()
-root.title("Platform Operations")
+def createMainWindow():
+    global root, entryTickers, textLog, checkboxes
 
-# Instructions and Example for user input
-instruction_text = "Enter 'b' or 's' followed by ticker symbol (one per line):\nExample:\nb\nAAPL\nQQQ\nGME\ns\nNVDA\nGOOG"
-tk.Label(root, text=instruction_text, justify=tk.LEFT).pack(pady=5)
+    # Create tkinter window
+    root = tk.Tk()
+    root.title("Auto Trader")
 
-# Example tickers entry with Text widget for multiline input
-entry_tickers = tk.Text(root, height=10, width=30)
-entry_tickers.pack(pady=5)
+    # Instructions and Example for user input
+    instructionText = "Enter 'b' or 's' followed by ticker symbol (one per line):\nExample:\nb\nAAPL\nQQQ\nGME\ns\nNVDA\nGOOG"
+    tk.Label(root, text=instructionText, justify=tk.LEFT).pack(pady=5)
 
-# Create checkboxes for each platform
-platforms = [
-    "Ally",
-    "Fidelity",
-    "Firstrade",
-    "Public",
-    "Robinhood",
-    "Schwab",
-    "SoFi",
-    "Tradier",
-    "Vanguard",
-    "WellsFargo",
-]
+    # Example tickers entry with Text widget for multiline input
+    entryTickers = tk.Text(root, height=10, width=30)
+    entryTickers.pack(pady=5)
 
-login_functions = {
+    # Create checkboxes for each platform
+    platforms = [
+        "Ally",
+        "Fidelity",
+        "Firstrade",
+        "Public",
+        "Robinhood",
+        "Schwab",
+        "SoFi",
+        "Tradier",
+        "Vanguard",
+        "WellsFargo",
+    ]
+
+    checkboxes = {}
+    for platform in platforms:
+        var = tk.IntVar()
+        chk = tk.Checkbutton(root, text=platform, variable=var, onvalue=1, offvalue=0)
+        chk.pack(anchor=tk.W)
+        checkboxes[platform] = var
+
+    # Create "Run" button
+    btnRun = tk.Button(root, text="Run", command=runSelectedPlatforms)
+    btnRun.pack(pady=10)
+
+    # Text widget to display log content
+    textLog = tk.Text(root, height=10, width=50)
+    textLog.pack(pady=10)
+
+    displayLog()
+
+    # Run the tkinter main loop
+    root.mainloop()
+
+
+# Define login and execute functions for each platform
+loginFunctions = {
     "Ally": allyLogin,
     "Fidelity": fidelityLogin,
     "Firstrade": firstradeLogin,
@@ -107,7 +127,7 @@ login_functions = {
     "WellsFargo": wellsFargoLogin,
 }
 
-execute_functions = {
+executeFunctions = {
     "Ally": allyExec,
     "Fidelity": fidelityExec,
     "Firstrade": firstradeExec,
@@ -120,22 +140,5 @@ execute_functions = {
     "WellsFargo": wellsFargoExec,
 }
 
-checkboxes = {}
-for platform in platforms:
-    var = tk.IntVar()
-    chk = tk.Checkbutton(root, text=platform, variable=var, onvalue=1, offvalue=0)
-    chk.pack(anchor=tk.W)
-    checkboxes[platform] = var
-
-# Create "Run" button
-btn_run = tk.Button(root, text="Run", command=run_selected_platforms)
-btn_run.pack(pady=10)
-
-# Text widget to display log content
-text_log = tk.Text(root, height=10, width=50)
-text_log.pack(pady=10)
-
-display_log()
-
-# Run the tkinter main loop
-root.mainloop()
+# Start the application
+createMainWindow()
